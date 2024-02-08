@@ -13,12 +13,29 @@ class Settings(BaseSettings):
     BINANCE_API: SecretStr
     BINANCE_SECRET: SecretStr
     BINANCE_BASE_URLS: list[str] = [
-        'https://api.binance.com',
-        'https://api1.binance.com',
-        'https://api2.binance.com',
-        'https://api3.binance.com'
+        "https://api.binance.com",
+        "https://api1.binance.com",
+        "https://api2.binance.com",
+        "https://api3.binance.com",
     ]
-    BINANCE_TESTNET_BASE_URL: str = 'https://testnet.binance.vision'
+    BINANCE_TESTNET_BASE_URL: str = "https://testnet.binance.vision"
+
+    # database settings
+    POSTGRES_HOST: StrictStr
+    POSTGRES_PORT: int
+    POSTGRES_USER: StrictStr
+    POSTGRES_PASSWORD: SecretStr
+    POSTGRES_DB: StrictStr
+    POSTGRES_ECHO: bool = False
+    DB_URL: StrictStr | None = ""
+
 
 SETTINGS = Settings()
 
+SETTINGS.DB_URL = (
+    "postgresql+asyncpg:"
+    f"//{SETTINGS.POSTGRES_USER}:"
+    f"{SETTINGS.POSTGRES_PASSWORD.get_secret_value()}"
+    f"@{SETTINGS.POSTGRES_HOST}:{SETTINGS.POSTGRES_PORT}"
+    f"/{SETTINGS.POSTGRES_DB}"
+)
