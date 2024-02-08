@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # порт для AMQP
+      - "15672:15672"  # порт для веб-интерфейса (опционально)
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: financial_data
+    ports:
+      - "5438:5432"
+    volumes:
+      - ./init-scripts/postgres:/docker-entrypoint-initdb.d
