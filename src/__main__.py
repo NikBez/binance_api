@@ -1,20 +1,18 @@
 import asyncio
-from time import sleep
 
-from src.binance_connector import APIClient
-from src.common.dependeny_manager import DependencyManager
-from src.producer import run
-from src.settings import SETTINGS
+from src.database.database import db
+from src.manager import Manager
+from src.telegram.bot import TelegramHandler
 
 
 async def main():
-    api = SETTINGS.BINANCE_API.get_secret_value()
-    secret = SETTINGS.BINANCE_SECRET.get_secret_value()
-    client = APIClient(api, secret, True)
-    dependency_manager = DependencyManager()
-    while True:
-        await run(client, dependency_manager)
-        sleep(5)
+    await db.init_models()
+    manager = Manager()
+    tasks = [
+        manager.run(),
+        TelegramHandler.run()
+    ]
+    await asyncio.gather(*tasks)
 
 
 if __name__ == "__main__":

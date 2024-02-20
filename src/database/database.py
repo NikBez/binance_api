@@ -1,6 +1,6 @@
 from typing import AsyncIterator
 
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.settings import SETTINGS
@@ -17,22 +17,22 @@ class DBHandler:
         )
         self.AsyncSessionLocal = async_sessionmaker(
             bind=self.engine,
-            autoflush=False,
-            autocommit=False,
-            expire_on_commit=False,
+            expire_on_commit=False
         )
 
-    async def get_session(self) -> AsyncIterator[async_sessionmaker]:
-        try:
-            async_session = self.AsyncSessionLocal()
-            async with async_session as session:
-                yield session
-        except SQLAlchemyError:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+    # async def get_session(self) -> AsyncSession:
+    #     try:
+    #         async with self.AsyncSessionLocal() as session:
+    #             return session
+    #     except SQLAlchemyError:
+    #         await session.rollback()
+    #         raise
+    #     finally:
+    #         await session.close()
 
     async def init_models(self):
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+
+
+db = DBHandler()

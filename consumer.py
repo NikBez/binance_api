@@ -1,24 +1,32 @@
-import pika, sys, os
+import asyncio
+
+import aio_pika, sys, os
+from aio_pika.abc import AbstractIncomingMessage
+
+from src.database.database import DBHandler
 
 
-def main():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host="localhost"))
-    channel = connection.channel()
+async def main():
+    db = DBHandler()
+    await db.init_models()
+    connection = await aio_pika.connect_robust(
+        "amqp://guest:guest@127.0.0.1/",
+    )
+    async with connection:
+        channel = await connection.channel()
+        await channel.set_qos(prefetch_count=10)
+        queue = await channel.declare_queue('hell', auto_delete=True)
+        await queue.consume(on_message)
+        await asyncio.Future()
 
-    channel.queue_declare(queue="hello")
-
-    def callback(ch, method, properties, body):
-        print(f" [x] Received {body}")
-
-    channel.basic_consume(queue="hello", on_message_callback=callback, auto_ack=True)
-
-    print(" [*] Waiting for messages. To exit press CTRL+C")
-    channel.start_consuming()
+async def on_message(message: AbstractIncomingMessage) -> None:
+    async with message.process():
+        print(f"[x] {message.body!r}")
 
 
 if __name__ == "__main__":
     try:
-        main()
+        asyncio.run(main())
     except KeyboardInterrupt:
         print("Interrupted")
         try:

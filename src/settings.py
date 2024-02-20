@@ -29,6 +29,15 @@ class Settings(BaseSettings):
     POSTGRES_ECHO: bool = False
     DB_URL: StrictStr | None = ""
 
+    get_pair_price_default_periodicy: int = 10
+
+    TELEGRAM_BOT_TOKEN: SecretStr
+
+    # rabbitmq settings
+    RABBITMQ_URL: str
+    TELEGRAM_QUEUE_NAME: str
+    SERVER_QUEUE_NAME: str
+
 
 SETTINGS = Settings()
 
